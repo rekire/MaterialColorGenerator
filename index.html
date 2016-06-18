@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Material color generator</title>
+<script type="text/javascript">
+document.addEventListener("DOMContentLoaded", function(event) {
+  var input = document.getElementById("color");
+  input.oninput=calc;
+  calc({'target':input});
+});
+
+function calc(event) {
+  var color = (event) .target.value;
+  console.log(event.target.value);//alert(tag.value);
+  if(color.length == 3) {
+     color = color[0] + color[0] + color[1] + color[1] + color[2] + color[2]; 
+  }
+  var output = document.getElementById("output");
+  if(color.length == 6) {
+    var colorInt = parseInt(color, 16);
+    var r = (colorInt & 0xff0000) >> 16;
+    var g = (colorInt & 0x00ff00) >> 8;
+    var b = (colorInt & 0x0000ff);
+    var hsv = rgbToHsv(r, g, b);
+    output.innerHTML ='<div style="background-color:#' + toHex(hsvToRgb(hsv[0], hsv[1], hsv[2])) + '">App color</div>';
+    output.innerHTML+='<div style="background-color:#' + toHex(hsvToRgb(hsv[0], hsv[1], 1)) + '">Accent</div>';
+    output.innerHTML+='<div style="background-color:#' + toHex(hsvToRgb(hsv[0], hsv[1], 0.65)) + '">Lighter UI element</div>';
+    output.innerHTML+='<div style="background-color:#' + toHex(hsvToRgb(hsv[0], hsv[1], 0.4)) + '; color:#fff">UI element</div>';
+    output.innerHTML+='<div style="background-color:#' + toHex(hsvToRgb(hsv[0], hsv[1], 0.3)) + '; color:#fff">Lighter background</div>';
+    output.innerHTML+='<div style="background-color:#' + toHex(hsvToRgb(hsv[0], hsv[1], 0.15)) + '; color:#fff">Dark background</div>';
+  } else {
+    output.innerHTML="";
+  }
+}
+
+function toHex(rgb) {
+  return format((rgb[0] << 16) | (rgb[1] << 8) | rgb[2]);
+}
+
+function format(d) {
+  var hex = Number(d).toString(16);
+  hex = "000000".substr(0, 6 - hex.length) + hex; 
+  return hex;
+}
+
+https://github.com/mjackson/mjijackson.github.com/blob/master/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript.html
+// modified to accept h value in the range 0-359
+/**
+ * Converts an RGB color value to HSV. Conversion formula
+ * adapted from http://en.wikipedia.org/wiki/HSV_color_space.
+ * Assumes r, g, and b are contained in the set [0, 255] and
+ * returns h, s, and v in the set [0, 1].
+ *
+ * @param   Number  r       The red color value
+ * @param   Number  g       The green color value
+ * @param   Number  b       The blue color value
+ * @return  Array           The HSV representation
+ */
+function rgbToHsv(r, g, b){
+    r = r/255, g = g/255, b = b/255;
+    var max = Math.max(r, g, b), min = Math.min(r, g, b);
+    var h, s, v = max;
+
+    var d = max - min;
+    s = max == 0 ? 0 : d / max;
+
+    if(max == min){
+        h = 0; // achromatic
+    }else{
+        switch(max){
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+    }
+
+    h *= 360; // mod
+
+    return [h, s, v];
+}
+
+/**
+ * Converts an HSV color value to RGB. Conversion formula
+ * adapted from http://en.wikipedia.org/wiki/HSV_color_space.
+ * Assumes h, s, and v are contained in the set [0, 1] and
+ * returns r, g, and b in the set [0, 255].
+ *
+ * @param   Number  h       The hue
+ * @param   Number  s       The saturation
+ * @param   Number  v       The value
+ * @return  Array           The RGB representation
+ */
+function hsvToRgb(h, s, v){
+    var r, g, b;
+
+    h /= 360.0; // mod
+
+    var i = Math.floor(h * 6);
+    var f = h * 6 - i;
+    var p = v * (1 - s);
+    var q = v * (1 - f * s);
+    var t = v * (1 - (1 - f) * s);
+
+    switch(i % 6){
+        case 0: r = v, g = t, b = p; break;
+        case 1: r = q, g = v, b = p; break;
+        case 2: r = p, g = v, b = t; break;
+        case 3: r = p, g = q, b = v; break;
+        case 4: r = t, g = p, b = v; break;
+        case 5: r = v, g = p, b = q; break;
+    }
+
+    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+}
+</script>
+<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" />
+<style type="text/css">
+* {
+  font-family: 'Roboto', sans-serif;
+}
+h1 {
+  margin-top:0;
+}
+#output div {
+  width:200px;
+  max-width:80%;
+  height:18px;
+  padding:16px;
+}
+</style>
+</head>
+<body>
+<h1>Material color generator</h1>
+<p>Please enter your primary color: <input type="text" id="color" value="9c27b0" maxlength="6" size="6" /></p>
+<!-- https://youtu.be/LtD7eJp2ILo?t=7m28s -->
+<div id="output"/>
+</body>
+</html> 
