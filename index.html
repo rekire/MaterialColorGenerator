@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
 function calc(event) {
   var color = (event) .target.value;
-  console.log(event.target.value);//alert(tag.value);
+  console.log(event.target.value);
   if(color.length == 3) {
      color = color[0] + color[0] + color[1] + color[1] + color[2] + color[2]; 
   }
@@ -22,12 +22,18 @@ function calc(event) {
     var g = (colorInt & 0x00ff00) >> 8;
     var b = (colorInt & 0x0000ff);
     var hsv = rgbToHsv(r, g, b);
-    output.innerHTML ='<div style="background-color:#' + toHex(hsvToRgb(hsv[0], hsv[1], hsv[2])) + '">App color</div>';
-    output.innerHTML+='<div style="background-color:#' + toHex(hsvToRgb(hsv[0], hsv[1], 1)) + '">Accent</div>';
-    output.innerHTML+='<div style="background-color:#' + toHex(hsvToRgb(hsv[0], hsv[1], 0.65)) + '">Lighter UI element</div>';
-    output.innerHTML+='<div style="background-color:#' + toHex(hsvToRgb(hsv[0], hsv[1], 0.4)) + '; color:#fff">UI element</div>';
-    output.innerHTML+='<div style="background-color:#' + toHex(hsvToRgb(hsv[0], hsv[1], 0.3)) + '; color:#fff">Lighter background</div>';
-    output.innerHTML+='<div style="background-color:#' + toHex(hsvToRgb(hsv[0], hsv[1], 0.15)) + '; color:#fff">Dark background</div>';
+    var rgb = toHex(hsvToRgb(hsv[0], hsv[1], hsv[2]));
+    output.innerHTML ='<div style="background-color:#' + rgb + '">App color <span>#' + rgb + '</span></div>';
+    rgb = toHex(hsvToRgb(hsv[0], hsv[1], 1));
+    output.innerHTML+='<div style="background-color:#' + rgb + '">Accent <span>#' + rgb + '</span></div>';
+    rgb = toHex(hsvToRgb(hsv[0], hsv[1], 0.65));
+    output.innerHTML+='<div style="background-color:#' + rgb  + '">Lighter UI element <span>#' + rgb + '</span></div>';
+    rgb = toHex(hsvToRgb(hsv[0], hsv[1], 0.4));
+    output.innerHTML+='<div style="background-color:#' + rgb  + '; color:#fff">UI element <span>#' + rgb + '</span></div>';
+    rgb = toHex(hsvToRgb(hsv[0], hsv[1], 0.3));
+    output.innerHTML+='<div style="background-color:#' + rgb  + '; color:#fff">Lighter background <span>#' + rgb + '</span></div>';
+    rgb = toHex(hsvToRgb(hsv[0], hsv[1], 0.15));
+    output.innerHTML+='<div style="background-color:#' + rgb  + '; color:#fff">Dark background <span>#' + rgb + '</span></div>';
   } else {
     output.innerHTML="";
   }
@@ -116,17 +122,22 @@ function hsvToRgb(h, s, v){
 </script>
 <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" />
 <style type="text/css">
-* {
+body {
   font-family: 'Roboto', sans-serif;
 }
 h1 {
-  margin-top:0;
+  margin-top: 0;
 }
 #output div {
-  width:200px;
-  max-width:80%;
-  height:18px;
-  padding:16px;
+  height: 60px;
+  line-height: 60px;
+  max-width: 80%;
+  padding: 0 16px;
+  vertical-align: middle;
+  width: 250px;
+}
+#output div span {
+  float: right;
 }
 </style>
 </head>
