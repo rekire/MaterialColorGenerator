@@ -7,6 +7,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
   var input = document.getElementById("color");
   input.oninput=calc;
   calc({'target':input});
+  // out link tracking
+  for(var i=0; i<document.links.lenth; i++) {
+    document.links[i].onclick=trackOutboundLink;
+  }
 });
 
 function calc(event) {
@@ -34,8 +38,74 @@ function calc(event) {
     output.innerHTML+='<div style="background-color:#' + rgb  + '; color:#fff">Lighter background <span>#' + rgb + '</span></div>';
     rgb = toHex(hsvToRgb(hsv[0], hsv[1], 0.15));
     output.innerHTML+='<div style="background-color:#' + rgb  + '; color:#fff">Dark background <span>#' + rgb + '</span></div>';
+    draw(hsv);
   } else {
     output.innerHTML="";
+  }
+}
+
+function draw(hsv) {
+  var canvas = document.getElementById('canvas');
+  if (canvas.getContext){
+    var ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = true;
+
+    // first watch
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(110,180,100,0,Math.PI*2,true);
+    ctx.clip();
+    ctx.beginPath();
+    ctx.fillStyle = '#' + toHex(hsvToRgb(hsv[0], hsv[1], 0.3));
+    ctx.fillRect(15, 80, 190, 180);
+    ctx.fillStyle = '#' + toHex(hsvToRgb(hsv[0], hsv[1], 0.4));
+    ctx.fillRect(15, 240, 190, 35);
+    ctx.restore();
+
+    // second watch
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(350,180,100,0,Math.PI*2,true);
+    ctx.clip();
+    ctx.beginPath();
+    ctx.fillStyle = '#' + toHex(hsvToRgb(hsv[0], hsv[1], 0.65));
+    ctx.fillRect(255, 80, 190, 100);
+    ctx.restore();
+    ctx.fillStyle = '#' + toHex(hsvToRgb(hsv[0], hsv[1], 0.4));
+    ctx.fillRect(255, 180, 190, 160);
+
+    // third watch
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(590,180,100,0,Math.PI*2,true);
+    ctx.clip();
+    ctx.beginPath();
+    ctx.fillStyle = '#' + toHex(hsvToRgb(hsv[0], hsv[1], 0.4));
+    ctx.fillRect(495, 140, 190, 100);
+    ctx.fillStyle = '#' + toHex(hsvToRgb(hsv[0], hsv[1], 1));
+    ctx.fillRect(495, 240, 190, 35);
+    ctx.restore();
+    ctx.fillStyle = '#' + toHex(hsvToRgb(hsv[0], hsv[1], 0.15));
+    ctx.fillRect(495, 10, 190, 130);
+
+    // watch chromes
+    ctx.beginPath();
+    ctx.lineWidth=10;
+    ctx.strokeStyle='#555';
+    ctx.arc(110,180,100,0,Math.PI*2,true);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(350,180,100,0,Math.PI*2,true);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(590,180,100,0,Math.PI*2,true);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.lineWidth=0;
+    ctx.fillStyle = '#' + toHex(hsvToRgb(hsv[0], hsv[1], 1));
+    ctx.arc(300,140,20,0,Math.PI*2,true);
+    ctx.fill();
   }
 }
 
@@ -128,9 +198,17 @@ m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 
 ga('create', 'UA-72964219-2', 'auto');
 ga('send', 'pageview');
+
+function trackOutboundLink(url) {
+   ga('send', 'event', 'outbound', 'click', url, {
+     'transport': 'beacon',
+     'hitCallback': function(){document.location = url;}
+   });
+   return false;
+}
 </script>
 <script async defer src="https://buttons.github.io/buttons.js"></script>
-<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet"/>
 <style type="text/css">
 body {
   font-family: 'Roboto', sans-serif;
@@ -146,47 +224,49 @@ h1 {
   vertical-align: middle;
   width: 250px;
 }
+#output {
+  float:left;
+}
 #output div span {
   float: right;
+}
+canvas {
+  clear:left;
+  min-width:200px;
+  max-width:100%;
 }
 </style>
 </head>
 <body>
 <h1>Material color generator
-<a aria-label="Star rekire/MaterialColorGenerator on GitHub" data-count-aria-label="# stargazers on GitHub" data-count-api="/repos/rekire/MaterialColorGenerator#stargazers_count" data-count-href="/rekire/MaterialColorGenerator/stargazers" data-style="mega" data-icon="octicon-star" href="https://github.com/rekire/MaterialColorGenerator" class="github-button">Star</a></h1>
-<p>Please enter your primary color: <input type="text" id="color" value="9c27b0" maxlength="6" size="6" /></p>
+    <a aria-label="Star rekire/MaterialColorGenerator on GitHub"
+       data-count-aria-label="# stargazers on GitHub"
+       data-count-api="/repos/rekire/MaterialColorGenerator#stargazers_count"
+       data-count-href="/rekire/MaterialColorGenerator/stargazers" data-style="mega"
+       data-icon="octicon-star" href="https://github.com/rekire/MaterialColorGenerator"
+       class="github-button">Star</a></h1>
+<p>Please enter your primary color: <input type="text" id="color" value="9c27b0" maxlength="6" size="6"/></p>
 <div id="output"></div>
+<canvas id="canvas" width="700" height="350" style="background-color:#efefef"></canvas>
 
 <h2>About</h2>
-
-
-<p>This is a small tool which should you help to select the right colors for your project. If you like this tool please star it.</p>
-
-
-<p>You can specify your main color and you will get the matching colors for UI Elements as described in the
- <a href="https://youtu.be/LtD7eJp2ILo?t=6m1s">Building Apps with Material Design</a> talk about Wear 2.0 on the Google
-I/O 2016.</p>
-
-
-<p>Basically the colors are calculated based on the <a href="https://en.wikipedia.org/wiki/HSL_and_HSV">HSB or HSV</a>
-color space. Here is a screenshot taken from the Video above:</p>
-
-<img src="watch.jpg" alt="Example usage of the colors on Android Wear 2.0" style="max-width:100%;" />
-
-
+<p>This is a small tool which should you help to select the right colors for your project. If you
+    like this tool please star it.</p>
+<p>You can specify your main color and you will get the matching colors for UI Elements as described
+    in the <a href="https://youtu.be/LtD7eJp2ILo?t=6m1s">Building Apps with Material Design</a> talk
+    about Wear 2.0 on the Google I/O 2016.</p>
+<p>Basically the colors are calculated based on the <a
+        href="https://en.wikipedia.org/wiki/HSL_and_HSV">HSB or HSV</a> color space. Here is a
+    screenshot taken from the Video above:</p>
+<img src="watch.jpg" alt="Example usage of the colors on Android Wear 2.0" style="max-width:100%;"/>
 
 <h2>Used third party libs</h2>
-
-
-<p>A light modified <a href="https://github.com/mjackson/mjijackson.github.com/blob/master/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript.html">color convertation</a> implementation from <a href="https://github.com/mjackson">mjackson</a>.</p>
-
+<p>A light modified <a
+        href="https://github.com/mjackson/mjijackson.github.com/blob/master/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript.html">color
+    convertation</a> implementation from <a href="https://github.com/mjackson">mjackson</a>.</p>
 
 <h2>License</h2>
-
-
-<p>This code is licensed under the <a href="http://www.rekisoft.eu/licenses/rkspl.html">Rekisoft Public License</a>.<br />
-
-There is no need for contibution for using the generated colors.</p>
-
+<p>This code is licensed under the <a href="http://www.rekisoft.eu/licenses/rkspl.html">Rekisoft Public License</a>.<br/>
+There is no need for contribution for using the generated colors.</p>
 </body>
 </html> 
