@@ -4,18 +4,55 @@
 <title>Material color generator</title>
 <script type="text/javascript">
 document.addEventListener("DOMContentLoaded", function(event) {
-  var input = document.getElementById("color");
+  input = document.getElementById("color");
   input.oninput=calc;
   calc({'target':input});
   // out link tracking
-  for(var i=0; i<document.links.lenth; i++) {
-    document.links[i].onclick=trackOutboundLink;
+  for(var i=0; i<document.links.length; i++) {
+    document.links[i].onclick = new Function("trackOutboundLink('"+document.links[i].href+"'); return false");
   }
 });
 
+// spoiler: not yet done ;-)
+if(false && window.XMLHttpRequest) {
+  httpRequest = new XMLHttpRequest();
+  httpRequest.open('GET', 'https://api.github.com/repos/rekire/MaterialColorGenerator/stargazers', true);
+  httpRequest.send(null);
+  httpRequest.onreadystatechange = function(){
+    if(httpRequest.readyState === XMLHttpRequest.DONE && httpRequest.status === 200) {
+      var users = JSON.parse(httpRequest.responseText);
+      for(var i=0; i<users.length; i++) {
+        // Math.floor(40*window.devicePixelRatio)
+        console.log(users[i].login, users[i].avatar_url+"&s=40");
+      }
+    }
+  };
+}
+
+users = [new Image(), new Image(), new Image(), new Image()];
+users[0].src="https://avatars.githubusercontent.com/u/4619618?v=1&s="+Math.floor(40*window.devicePixelRatio);
+users[1].src="https://avatars.githubusercontent.com/u/0?v=1&s="+Math.floor(40*window.devicePixelRatio);
+//users[2].src="https://avatars.githubusercontent.com/u/0?v=1&s=40";
+//users[3].src="https://avatars.githubusercontent.com/u/0?v=1&s=40";
+users[0].onload=function() {calc({'target':input});};
+
+// source: http://stackoverflow.com/a/19270021/995926
+function getRandom(arr, n) {
+    var result = new Array(n),
+        len = arr.length,
+        taken = new Array(len);
+    if (n > len)
+        throw new RangeError("getRandom: more elements taken than available");
+    while (n--) {
+        var x = Math.floor(Math.random() * len);
+        result[n] = arr[x in taken ? taken[x] : x];
+        taken[x] = --len;
+    }
+    return result;
+}
+
 function calc(event) {
-  var color = (event) .target.value;
-  console.log(event.target.value);
+  var color = event.target.value;
   if(color.length == 3) {
      color = color[0] + color[0] + color[1] + color[1] + color[2] + color[2]; 
   }
@@ -39,8 +76,6 @@ function calc(event) {
     rgb = toHex(hsvToRgb(hsv[0], hsv[1], 0.15));
     output.innerHTML+='<div style="background-color:#' + rgb  + '; color:#fff">Dark background <span>#' + rgb + '</span></div>';
     draw(hsv);
-  } else {
-    output.innerHTML="";
   }
 }
 
@@ -48,6 +83,24 @@ function draw(hsv) {
   var canvas = document.getElementById('canvas');
   if (canvas.getContext){
     var ctx = canvas.getContext('2d');
+
+    // source: http://html5-mobile.de/blog/retina-display-html-canvas-optimieren
+    if(window.devicePixelRatio) {
+      var devicePixelRatio = window.devicePixelRatio;
+      if(!canvas.dataset['optimized']) {
+        var canvasWidth = canvas.getAttribute("width");
+        var canvasHeight = canvas.getAttribute("height");
+
+        canvas.style.width = canvasWidth+"px";
+        canvas.style.height = canvasHeight+"px";
+        canvas.setAttribute("width", Math.ceil(canvasWidth*devicePixelRatio));
+        canvas.setAttribute("height", Math.ceil(canvasHeight*devicePixelRatio));
+
+        canvas.dataset['optimized']=true;
+      ctx.transform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+      }
+    }
+
     ctx.imageSmoothingEnabled = true;
 
     // first watch
@@ -57,9 +110,9 @@ function draw(hsv) {
     ctx.clip();
     ctx.beginPath();
     ctx.fillStyle = '#' + toHex(hsvToRgb(hsv[0], hsv[1], 0.3));
-    ctx.fillRect(15, 80, 190, 180);
+    ctx.fillRect(14, 80, 192, 180);
     ctx.fillStyle = '#' + toHex(hsvToRgb(hsv[0], hsv[1], 0.4));
-    ctx.fillRect(15, 240, 190, 35);
+    ctx.fillRect(14, 240, 192, 36);
     ctx.restore();
 
     // second watch
@@ -69,10 +122,10 @@ function draw(hsv) {
     ctx.clip();
     ctx.beginPath();
     ctx.fillStyle = '#' + toHex(hsvToRgb(hsv[0], hsv[1], 0.65));
-    ctx.fillRect(255, 80, 190, 100);
+    ctx.fillRect(254, 80, 192, 101);
     ctx.restore();
     ctx.fillStyle = '#' + toHex(hsvToRgb(hsv[0], hsv[1], 0.4));
-    ctx.fillRect(255, 180, 190, 160);
+    ctx.fillRect(254, 180, 192, 160);
 
     // third watch
     ctx.save();
@@ -81,12 +134,28 @@ function draw(hsv) {
     ctx.clip();
     ctx.beginPath();
     ctx.fillStyle = '#' + toHex(hsvToRgb(hsv[0], hsv[1], 0.4));
-    ctx.fillRect(495, 140, 190, 100);
+    ctx.fillRect(494, 140, 192, 100);
     ctx.fillStyle = '#' + toHex(hsvToRgb(hsv[0], hsv[1], 1));
-    ctx.fillRect(495, 240, 190, 35);
+    ctx.fillRect(494, 240, 192, 36);
     ctx.restore();
     ctx.fillStyle = '#' + toHex(hsvToRgb(hsv[0], hsv[1], 0.15));
-    ctx.fillRect(495, 10, 190, 130);
+    ctx.fillRect(494, 10, 192, 130);
+
+    // draw content of first watch
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(110,130,20,0,Math.PI*2,true);
+    ctx.clip();
+    ctx.drawImage(users[0],90,110,40,40)
+    ctx.restore();
+    ctx.font = "bold 10pt Roboto";
+    ctx.fillStyle = 'white';
+    ctx.textAlign = 'center';
+    ctx.fillText("rekire", 110, 170);
+    ctx.font = "10pt Roboto";
+    ctx.fillText("This library is cool.", 110, 190);
+    ctx.fillText("I stared it already,", 110, 205);
+    ctx.fillText("you should do it too.", 110, 220);
 
     // watch chromes
     ctx.beginPath();
@@ -200,11 +269,11 @@ ga('create', 'UA-72964219-2', 'auto');
 ga('send', 'pageview');
 
 function trackOutboundLink(url) {
-   ga('send', 'event', 'outbound', 'click', url, {
-     'transport': 'beacon',
-     'hitCallback': function(){document.location = url;}
-   });
-   return false;
+  console.log("click on " + url);
+  ga('send', 'event', 'outbound', 'click', url, {
+    'transport': 'beacon',
+    'hitCallback': function(){document.location = url;}
+  });
 }
 </script>
 <script async defer src="https://buttons.github.io/buttons.js"></script>
@@ -222,10 +291,10 @@ h1 {
   max-width: 80%;
   padding: 0 16px;
   vertical-align: middle;
-  width: 250px;
 }
 #output {
   float:left;
+  width: 275px;
 }
 #output div span {
   float: right;
