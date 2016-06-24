@@ -6,7 +6,7 @@
 document.addEventListener("DOMContentLoaded", function(event) {
   input = document.getElementById("color");
   input.oninput=calc;
-  calc({'target':input});
+  calc();
   // out link tracking
   for(var i=0; i<document.links.length; i++) {
     document.links[i].onclick = new Function("trackOutboundLink('"+document.links[i].href+"'); return false");
@@ -29,12 +29,22 @@ if(false && window.XMLHttpRequest) {
   };
 }
 
-users = [new Image(), new Image(), new Image(), new Image()];
-users[0].src="https://avatars.githubusercontent.com/u/4619618?v=1&s="+Math.floor(40*window.devicePixelRatio);
-users[1].src="https://avatars.githubusercontent.com/u/0?v=1&s="+Math.floor(40*window.devicePixelRatio);
-//users[2].src="https://avatars.githubusercontent.com/u/0?v=1&s=40";
-//users[3].src="https://avatars.githubusercontent.com/u/0?v=1&s=40";
-users[0].onload=function() {calc({'target':input});};
+users = null;
+function loadImages() {
+  if(users === null) {
+    users = [new Image(), new Image(), new Image(), new Image()];
+    users[0].onload=calc;
+    users.size=0;
+  }
+  var targetSize = Math.floor(40*window.devicePixelRatio);
+  if(users.size < targetSize) {
+    users[0].src="https://avatars.githubusercontent.com/u/4619618?v=1&s=" + targetSize;
+    users[1].src="https://avatars.githubusercontent.com/u/0?v=1&s=" + targetSize;
+    //users[2].src="https://avatars.githubusercontent.com/u/0?v=1&s=40";
+    //users[3].src="https://avatars.githubusercontent.com/u/0?v=1&s=40";
+    users.size = targetSize;
+  }
+}
 
 // source: http://stackoverflow.com/a/19270021/995926
 function getRandom(arr, n) {
@@ -51,8 +61,8 @@ function getRandom(arr, n) {
     return result;
 }
 
-function calc(event) {
-  var color = event.target.value;
+function calc() {
+  var color = document.getElementById("color").value;
   if(color.length == 3) {
      color = color[0] + color[0] + color[1] + color[1] + color[2] + color[2]; 
   }
@@ -79,26 +89,29 @@ function calc(event) {
   }
 }
 
+lastZoom = -1;
+window.onresize=calc;
+
 function draw(hsv) {
   var canvas = document.getElementById('canvas');
   if (canvas.getContext){
     var ctx = canvas.getContext('2d');
 
     // source: http://html5-mobile.de/blog/retina-display-html-canvas-optimieren
-    if(window.devicePixelRatio) {
+    if(window.devicePixelRatio && window.devicePixelRatio !== lastZoom) {
+      lastZoom = window.devicePixelRatio;
       var devicePixelRatio = window.devicePixelRatio;
-      if(!canvas.dataset['optimized']) {
-        var canvasWidth = canvas.getAttribute("width");
-        var canvasHeight = canvas.getAttribute("height");
+      var canvasWidth = 700;
+      var canvasHeight = 350;
 
-        canvas.style.width = canvasWidth+"px";
-        canvas.style.height = canvasHeight+"px";
-        canvas.setAttribute("width", Math.ceil(canvasWidth*devicePixelRatio));
-        canvas.setAttribute("height", Math.ceil(canvasHeight*devicePixelRatio));
+      canvas.style.width = canvasWidth+"px";
+      canvas.style.height = canvasHeight+"px";
+      canvas.setAttribute("width", Math.ceil(canvasWidth*devicePixelRatio));
+      canvas.setAttribute("height", Math.ceil(canvasHeight*devicePixelRatio));
 
-        canvas.dataset['optimized']=true;
       ctx.transform(devicePixelRatio,0,0,devicePixelRatio,0,0);
-      }
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      loadImages();
     }
 
     ctx.imageSmoothingEnabled = true;
@@ -188,7 +201,7 @@ function format(d) {
   return hex;
 }
 
-https://github.com/mjackson/mjijackson.github.com/blob/master/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript.html
+// https://github.com/mjackson/mjijackson.github.com/blob/master/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript.html
 // modified to accept h value in the range 0-359
 /**
  * Converts an RGB color value to HSV. Conversion formula
